@@ -22,7 +22,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from gi.repository import Adw, Gio, Gtk
+from gi.repository import Adw, Gio, Gtk  # type: ignore
 from .welcome import GriffinWelcomePage
 from ..services.toast_service import ToastService
 
