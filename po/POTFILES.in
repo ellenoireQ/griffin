@@ -1,0 +1,8 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/org.griffin.app.desktop.in
+data/org.griffin.app.metainfo.xml.in
+data/org.griffin.app.gschema.xml
+src/main.py
+src/window.py
+src/window.ui

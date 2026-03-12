@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.griffin.app
+Exec=@bindir@/griffin --gapplication-service
