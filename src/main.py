@@ -29,8 +29,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Gio, Adw
-from .window import GriffinWindow
-from .toast_service import ToastService
+from .views.window import GriffinWindow
+from .services.toast_service import ToastService
 
 
 class GriffinApplication(Adw.Application):

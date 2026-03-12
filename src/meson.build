@@ -6,12 +6,12 @@ blueprint_compiler = find_program('blueprint-compiler')
 
 blueprints = custom_target('blueprints',
   input: files(
-    'window.blp',
-    'shortcuts-dialog.blp',
-    'welcome.blp',
+    'ui/window.blp',
+    'ui/shortcuts-dialog.blp',
+    'ui/welcome.blp',
   ),
   output: '.',
-  command: [blueprint_compiler, 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+  command: [blueprint_compiler, 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@/ui', '@INPUT@'],
 )
 
 gnome.compile_resources('griffin',
@@ -42,9 +42,19 @@ configure_file(
 griffin_sources = [
   '__init__.py',
   'main.py',
-  'window.py',
-  'welcome.py',
-  'toast_service.py',
+]
+
+griffin_views = [
+  'views/__init__.py',
+  'views/window.py',
+  'views/welcome.py',
+]
+
+griffin_services = [
+  'services/__init__.py',
+  'services/toast_service.py',
 ]
 
 install_data(griffin_sources, install_dir: moduledir)
+install_data(griffin_views, install_dir: moduledir / 'views')
+install_data(griffin_services, install_dir: moduledir / 'services')

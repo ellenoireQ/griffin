@@ -24,28 +24,21 @@
 
 from gi.repository import Adw, Gio, Gtk
 from .welcome import GriffinWelcomePage
-from .toast_service import ToastService
+from ..services.toast_service import ToastService
 
 
 @Gtk.Template(resource_path="/org/griffin/app/window.ui")
 class GriffinWindow(Adw.ApplicationWindow):
     __gtype_name__ = "GriffinWindow"
 
-    label = Gtk.Template.Child()
+    label1 = Gtk.Template.Child()
     button = Gtk.Template.Child()
+    toast_overlay = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # Wrap the ToolbarView content with a ToastOverlay programmatically
-        toolbar_view = self.get_content()
-        original_content = toolbar_view.get_content()
-        toast_overlay = Adw.ToastOverlay()
-        toast_overlay.set_child(original_content)
-        toolbar_view.set_content(toast_overlay)
-
-        # Register the overlay with ToastService
-        ToastService.get_default().set_overlay(toast_overlay)
+        ToastService.get_default().set_overlay(self.toast_overlay)
 
         # Register window actions for toolbar buttons
         self._create_action("new-file", self.on_new_file)

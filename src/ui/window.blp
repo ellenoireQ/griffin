@@ -62,11 +62,13 @@ template $GriffinWindow: Adw.ApplicationWindow {
       }
     }
 
-    content: Box box {
-      orientation: vertical;
-
-      Box box_one {
-        orientation: horizontal;
+    content: Adw.ToastOverlay toast_overlay {
+      Box box {
+        orientation: vertical;
+        vexpand: true;
+        valign: center;
+        halign: center;
+        spacing: 12;
 
         Label label1 {
           label: _("Hello, World!");
@@ -75,21 +77,15 @@ template $GriffinWindow: Adw.ApplicationWindow {
             "title-1",
           ]
         }
-      }
 
-      Label label2 {
-        label: _("Hello again!");
+        Box butt_box {
+          halign: center;
 
-        styles [
-          "title-1",
-        ]
-      }
-
-      Box butt_box {
-        Button button {
-          label: _("_Ok");
-          use-underline: true;
-          clicked => $ok_button_clicked();
+          Button button {
+            label: _("_Ok");
+            use-underline: true;
+            clicked => $ok_button_clicked();
+          }
         }
       }
     };
