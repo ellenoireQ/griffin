@@ -1,0 +1,80 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $GriffinWelcomePage: Adw.Window {
+  title: _("Welcome");
+  default-width: 600;
+  default-height: 500;
+  modal: true;
+  resizable: false;
+
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-title: false;
+
+      styles ["flat"]
+    }
+
+    content: Adw.Clamp {
+      maximum-size: 500;
+
+      Box {
+        orientation: vertical;
+        spacing: 24;
+        margin-start: 24;
+        margin-end: 24;
+        margin-bottom: 24;
+        valign: center;
+        vexpand: true;
+
+        Image {
+          icon-name: "org.griffin.app";
+          pixel-size: 96;
+        }
+
+        Label {
+          label: _("Welcome to Griffin");
+
+          styles ["title-1"]
+        }
+
+        Label {
+          label: _("Thank you for using Griffin. Please read the license agreement below before continuing.");
+          wrap: true;
+          justify: center;
+
+          styles ["body"]
+        }
+
+        ScrolledWindow {
+          min-content-height: 180;
+          max-content-height: 180;
+          hscrollbar-policy: never;
+
+          styles ["card"]
+
+          Label license_label {
+            label: "MIT License\n\nCopyright (c) 2026 Fitrian Musya\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.";
+            wrap: true;
+            xalign: 0;
+            margin-start: 12;
+            margin-end: 12;
+            margin-top: 12;
+            margin-bottom: 12;
+
+            styles ["body"]
+          }
+        }
+
+        Button get_started_button {
+          label: _("Get Started");
+          halign: center;
+          clicked => $on_get_started_clicked();
+
+          styles ["suggested-action", "pill"]
+        }
+      }
+    };
+  };
+}

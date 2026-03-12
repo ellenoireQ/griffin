@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="griffin">
 	<schema id="org.griffin.app" path="/org/griffin/app/">
+		<key name="first-run" type="b">
+			<default>true</default>
+			<summary>First run</summary>
+			<description>Whether this is the first time the application is run</description>
+		</key>
 	</schema>
 </schemalist>

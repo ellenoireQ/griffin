@@ -91,6 +91,11 @@ template $GriffinWindow: Adw.ApplicationWindow {
 menu primary_menu {
   section {
     item {
+      label: _("_Enable first-run");
+      action: "app.tools";
+    }
+
+    item {
       label: _("_Preferences");
       action: "app.preferences";
     }

@@ -25,8 +25,8 @@
 import sys
 import gi
 
-gi.require_version('Gtk', '4.0')
-gi.require_version('Adw', '1')
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Gio, Adw
 from .window import GriffinWindow
@@ -36,12 +36,15 @@ class GriffinApplication(Adw.Application):
     """The main application singleton class."""
 
     def __init__(self):
-        super().__init__(application_id='org.griffin.app',
-                         flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
-                         resource_base_path='/org/griffin/app')
-        self.create_action('quit', lambda *_: self.quit(), ['<control>q'])
-        self.create_action('about', self.on_about_action)
-        self.create_action('preferences', self.on_preferences_action)
+        super().__init__(
+            application_id="org.griffin.app",
+            flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
+            resource_base_path="/org/griffin/app",
+        )
+        self.create_action("quit", lambda *_: self.quit(), ["<control>q"])
+        self.create_action("about", self.on_about_action)
+        self.create_action("preferences", self.on_preferences_action)
+        self.create_action("tools", self.on_hack_action)
 
     def do_activate(self):
         """Called when the application is activated.
@@ -56,19 +59,25 @@ class GriffinApplication(Adw.Application):
 
     def on_about_action(self, *args):
         """Callback for the app.about action."""
-        about = Adw.AboutDialog(application_name='griffin',
-                                application_icon='org.griffin.app',
-                                developer_name='Fitrian Musya',
-                                version='0.1.0',
-                                developers=['Fitrian Musya'],
-                                copyright='© 2026 Fitrian Musya')
+        about = Adw.AboutDialog(
+            application_name="griffin",
+            application_icon="org.griffin.app",
+            developer_name="Fitrian Musya",
+            version="0.1.0",
+            developers=["Fitrian Musya"],
+            copyright="© 2026 Fitrian Musya",
+        )
         # Translators: Replace "translator-credits" with your name/username, and optionally an email or URL.
-        about.set_translator_credits(_('translator-credits'))
+        about.set_translator_credits(_("translator-credits"))
         about.present(self.props.active_window)
 
     def on_preferences_action(self, widget, _):
         """Callback for the app.preferences action."""
-        print('app.preferences action activated')
+        print("app.preferences action activated")
+
+    def on_hack_action(self, widget, _):
+        settings = Gio.Settings.new("org.griffin.app")
+        settings.set_boolean("first-run", True)
 
     def create_action(self, name, callback, shortcuts=None):
         """Add an application action.

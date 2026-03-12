@@ -8,6 +8,7 @@ blueprints = custom_target('blueprints',
   input: files(
     'window.blp',
     'shortcuts-dialog.blp',
+    'welcome.blp',
   ),
   output: '.',
   command: [blueprint_compiler, 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
@@ -42,6 +43,7 @@ griffin_sources = [
   '__init__.py',
   'main.py',
   'window.py',
+  'welcome.py',
 ]
 
 install_data(griffin_sources, install_dir: moduledir)

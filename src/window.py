@@ -23,10 +23,12 @@
 # SPDX-License-Identifier: MIT
 
 from gi.repository import Adw, Gio, Gtk
+from .welcome import GriffinWelcomePage
 
-@Gtk.Template(resource_path='/org/griffin/app/window.ui')
+
+@Gtk.Template(resource_path="/org/griffin/app/window.ui")
 class GriffinWindow(Adw.ApplicationWindow):
-    __gtype_name__ = 'GriffinWindow'
+    __gtype_name__ = "GriffinWindow"
 
     label = Gtk.Template.Child()
     button = Gtk.Template.Child()
@@ -35,27 +37,33 @@ class GriffinWindow(Adw.ApplicationWindow):
         super().__init__(**kwargs)
 
         # Register window actions for toolbar buttons
-        self._create_action('new-file', self.on_new_file)
-        self._create_action('open-file', self.on_open_file)
-        self._create_action('save-file', self.on_save_file)
-        self._create_action('import-file', self.on_import_file)
+        self._create_action("new-file", self.on_new_file)
+        self._create_action("open-file", self.on_open_file)
+        self._create_action("save-file", self.on_save_file)
+        self._create_action("import-file", self.on_import_file)
+
+        # Show welcome page on first run
+        settings = Gio.Settings.new("org.griffin.app")
+        if settings.get_boolean("first-run"):
+            welcome = GriffinWelcomePage(transient_for=self)
+            welcome.present()
 
     def _create_action(self, name, callback):
         action = Gio.SimpleAction.new(name, None)
-        action.connect('activate', callback)
+        action.connect("activate", callback)
         self.add_action(action)
 
     def on_new_file(self, action, param):
-        print('New file')
+        print("New file")
 
     def on_open_file(self, action, param):
-        print('Open file')
+        print("Open file")
 
     def on_save_file(self, action, param):
-        print('Save file')
+        print("Save file")
 
     def on_import_file(self, action, param):
-        print('Import file')
+        print("Import file")
 
     @Gtk.Template.Callback()
     def ok_button_clicked(self, button):
