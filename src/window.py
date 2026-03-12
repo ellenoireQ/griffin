@@ -22,14 +22,41 @@
 #
 # SPDX-License-Identifier: MIT
 
-from gi.repository import Adw
-from gi.repository import Gtk
+from gi.repository import Adw, Gio, Gtk
 
 @Gtk.Template(resource_path='/org/griffin/app/window.ui')
 class GriffinWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'GriffinWindow'
 
     label = Gtk.Template.Child()
+    button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        # Register window actions for toolbar buttons
+        self._create_action('new-file', self.on_new_file)
+        self._create_action('open-file', self.on_open_file)
+        self._create_action('save-file', self.on_save_file)
+        self._create_action('import-file', self.on_import_file)
+
+    def _create_action(self, name, callback):
+        action = Gio.SimpleAction.new(name, None)
+        action.connect('activate', callback)
+        self.add_action(action)
+
+    def on_new_file(self, action, param):
+        print('New file')
+
+    def on_open_file(self, action, param):
+        print('Open file')
+
+    def on_save_file(self, action, param):
+        print('Save file')
+
+    def on_import_file(self, action, param):
+        print('Import file')
+
+    @Gtk.Template.Callback()
+    def ok_button_clicked(self, button):
+        print("Ok button clicked!")

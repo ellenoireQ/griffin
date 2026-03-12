@@ -1,0 +1,108 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $GriffinWindow: Adw.ApplicationWindow {
+  title: _("Griffin");
+  default-width: 800;
+  default-height: 600;
+
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      MenuButton {
+        primary: true;
+        icon-name: "open-menu-symbolic";
+        tooltip-text: _("Main Menu");
+        menu-model: primary_menu;
+      }
+    }
+
+    [top]
+    Box wrapper_toolbar {
+      orientation: vertical;
+
+      Box quick_toolbar {
+        orientation: horizontal;
+        spacing: 2;
+
+        styles [
+          "toolbar",
+        ]
+
+        Button new_button {
+          icon-name: "document-new-symbolic";
+          tooltip-text: _("New");
+          action-name: "win.new-file";
+        }
+
+        Button open_button {
+          icon-name: "document-open-symbolic";
+          tooltip-text: _("Open");
+          action-name: "win.open-file";
+        }
+
+        Button save_button {
+          icon-name: "document-save-symbolic";
+          tooltip-text: _("Save");
+          action-name: "win.save-file";
+        }
+      }
+
+      Separator {
+        orientation: horizontal;
+      }
+    }
+
+    content: Box box {
+      orientation: vertical;
+
+      Box box_one {
+        orientation: horizontal;
+
+        Label label1 {
+          label: _("Hello, World!");
+
+          styles [
+            "title-1",
+          ]
+        }
+      }
+
+      Label label2 {
+        label: _("Hello again!");
+
+        styles [
+          "title-1",
+        ]
+      }
+
+      Box butt_box {
+        Button button {
+          label: _("_Ok");
+          use-underline: true;
+          clicked => $ok_button_clicked();
+        }
+      }
+    };
+  };
+}
+
+menu primary_menu {
+  section {
+    item {
+      label: _("_Preferences");
+      action: "app.preferences";
+    }
+
+    item {
+      label: _("_Keyboard Shortcuts");
+      action: "app.shortcuts";
+    }
+
+    item {
+      label: _("_About Griffin");
+      action: "app.about";
+    }
+  }
+}

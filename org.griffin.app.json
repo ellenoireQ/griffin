@@ -24,6 +24,17 @@
     ],
     "modules" : [
         {
+            "name" : "blueprint-compiler",
+            "buildsystem" : "meson",
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://gitlab.gnome.org/jwestman/blueprint-compiler.git",
+                    "tag" : "v0.20.0"
+                }
+            ]
+        },
+        {
             "name" : "griffin",
             "builddir" : true,
             "buildsystem" : "meson",

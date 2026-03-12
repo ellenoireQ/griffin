@@ -1,0 +1,22 @@
+using Gtk 4.0;
+
+ShortcutsWindow shortcuts_dialog {
+  ShortcutsSection {
+    title: _("Shortcuts");
+    section-name: "shortcuts";
+
+    ShortcutsGroup {
+      title: _("General");
+
+      ShortcutsShortcut {
+        title: C_("shortcut window", "Show Shortcuts");
+        action-name: "app.shortcuts";
+      }
+
+      ShortcutsShortcut {
+        title: C_("shortcut window", "Quit");
+        action-name: "app.quit";
+      }
+    }
+  }
+}
