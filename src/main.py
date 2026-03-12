@@ -30,6 +30,7 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Gio, Adw
 from .window import GriffinWindow
+from .toast_service import ToastService
 
 
 class GriffinApplication(Adw.Application):
@@ -41,10 +42,13 @@ class GriffinApplication(Adw.Application):
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
             resource_base_path="/org/griffin/app",
         )
+
         self.create_action("quit", lambda *_: self.quit(), ["<control>q"])
         self.create_action("about", self.on_about_action)
         self.create_action("preferences", self.on_preferences_action)
-        self.create_action("tools", self.on_hack_action)
+
+        # Hack Menu action
+        self.create_action("firstRun", self.on_hack_action)
 
     def do_activate(self):
         """Called when the application is activated.
@@ -78,6 +82,7 @@ class GriffinApplication(Adw.Application):
     def on_hack_action(self, widget, _):
         settings = Gio.Settings.new("org.griffin.app")
         settings.set_boolean("first-run", True)
+        ToastService.get_default().show("First-run has been re-enabled")
 
     def create_action(self, name, callback, shortcuts=None):
         """Add an application action.

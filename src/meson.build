@@ -44,6 +44,7 @@ griffin_sources = [
   'main.py',
   'window.py',
   'welcome.py',
+  'toast_service.py',
 ]
 
 install_data(griffin_sources, install_dir: moduledir)

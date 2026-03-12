@@ -12,6 +12,14 @@ template $GriffinWindow: Adw.ApplicationWindow {
       [end]
       MenuButton {
         primary: true;
+        icon-name: "utilities-terminal-symbolic";
+        tooltip-text: _("Hack Menu");
+        menu-model: hack_menu;
+      }
+
+      [end]
+      MenuButton {
+        primary: true;
         icon-name: "open-menu-symbolic";
         tooltip-text: _("Main Menu");
         menu-model: primary_menu;
@@ -91,11 +99,6 @@ template $GriffinWindow: Adw.ApplicationWindow {
 menu primary_menu {
   section {
     item {
-      label: _("_Enable first-run");
-      action: "app.tools";
-    }
-
-    item {
       label: _("_Preferences");
       action: "app.preferences";
     }
@@ -108,6 +111,15 @@ menu primary_menu {
     item {
       label: _("_About Griffin");
       action: "app.about";
+    }
+  }
+}
+
+menu hack_menu {
+  section {
+    item {
+      label: _("Enable first-run");
+      action: "app.firstRun";
     }
   }
 }

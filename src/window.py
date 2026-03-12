@@ -24,6 +24,7 @@
 
 from gi.repository import Adw, Gio, Gtk
 from .welcome import GriffinWelcomePage
+from .toast_service import ToastService
 
 
 @Gtk.Template(resource_path="/org/griffin/app/window.ui")
@@ -36,6 +37,16 @@ class GriffinWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # Wrap the ToolbarView content with a ToastOverlay programmatically
+        toolbar_view = self.get_content()
+        original_content = toolbar_view.get_content()
+        toast_overlay = Adw.ToastOverlay()
+        toast_overlay.set_child(original_content)
+        toolbar_view.set_content(toast_overlay)
+
+        # Register the overlay with ToastService
+        ToastService.get_default().set_overlay(toast_overlay)
+
         # Register window actions for toolbar buttons
         self._create_action("new-file", self.on_new_file)
         self._create_action("open-file", self.on_open_file)
@@ -46,7 +57,12 @@ class GriffinWindow(Adw.ApplicationWindow):
         settings = Gio.Settings.new("org.griffin.app")
         if settings.get_boolean("first-run"):
             welcome = GriffinWelcomePage(transient_for=self)
+            welcome.connect("close-request", self._on_welcome_closed)
             welcome.present()
+
+    def _on_welcome_closed(self, welcome):
+        ToastService.get_default().show("Welcome to Griffin! Let's get started.")
+        return False
 
     def _create_action(self, name, callback):
         action = Gio.SimpleAction.new(name, None)
@@ -67,4 +83,4 @@ class GriffinWindow(Adw.ApplicationWindow):
 
     @Gtk.Template.Callback()
     def ok_button_clicked(self, button):
-        print("Ok button clicked!")
+        ToastService.get_default().show("Ok button clicked!")
