@@ -34,6 +34,9 @@ class GriffinWindow(Adw.ApplicationWindow):
     label1 = Gtk.Template.Child()
     button = Gtk.Template.Child()
     toast_overlay = Gtk.Template.Child()
+    stack1 = Gtk.Template.Child()
+    stack2 = Gtk.Template.Child()
+    stack3 = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

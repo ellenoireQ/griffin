@@ -63,28 +63,95 @@ template $GriffinWindow: Adw.ApplicationWindow {
     }
 
     content: Adw.ToastOverlay toast_overlay {
-      Box box {
-        orientation: vertical;
-        vexpand: true;
-        valign: center;
-        halign: center;
-        spacing: 12;
+      Box {
+        orientation: horizontal;
 
-        Label label1 {
-          label: _("Hello, World!");
-
-          styles [
-            "title-1",
-          ]
+        StackSidebar sidebar {
+          stack: stack;
+          width-request: 180;
         }
 
-        Box butt_box {
-          halign: center;
+        Separator {
+          orientation: vertical;
+        }
 
-          Button button {
-            label: _("_Ok");
-            use-underline: true;
-            clicked => $ok_button_clicked();
+        Gtk.Stack stack {
+          hexpand: true;
+          vexpand: true;
+          transition-type: crossfade;
+
+          Gtk.StackPage {
+            name: "analytics";
+            title: _("Analytics");
+            icon-name: "go-home-symbolic";
+
+            child: Box stack1 {
+              orientation: vertical;
+              vexpand: true;
+              valign: center;
+              halign: center;
+              spacing: 12;
+
+              Label label1 {
+                label: _("Hello, World!");
+
+                styles [
+                  "title-1",
+                ]
+              }
+
+              Box butt_box {
+                halign: center;
+
+                Button button {
+                  label: _("_Ok");
+                  use-underline: true;
+                  clicked => $ok_button_clicked();
+                }
+              }
+            };
+          }
+
+          Gtk.StackPage {
+            name: "plot";
+            title: _("Plot");
+            icon-name: "emblem-system-symbolic";
+
+            child: Box stack2 {
+              orientation: vertical;
+              vexpand: true;
+              valign: center;
+              halign: center;
+
+              Label {
+                label: _("Plot Page");
+
+                styles [
+                  "title-2",
+                ]
+              }
+            };
+          }
+
+          Gtk.StackPage {
+            name: "mlearning";
+            title: _("Learning");
+            icon-name: "help-about-symbolic";
+
+            child: Box stack3 {
+              orientation: vertical;
+              vexpand: true;
+              valign: center;
+              halign: center;
+
+              Label {
+                label: _("Learning Page");
+
+                styles [
+                  "title-2",
+                ]
+              }
+            };
           }
         }
       }
