@@ -30,7 +30,7 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///home/ellenoire/Projects"
+                    "url" : "file:///home/ellenoire/Projects/griffin"
                 }
             ],
             "config-opts" : [
