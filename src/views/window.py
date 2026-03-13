@@ -23,6 +23,8 @@
 # SPDX-License-Identifier: MIT
 
 from gi.repository import Adw, Gio, GLib, Gtk  # type: ignore
+
+from ..backend import load_data
 from .welcome import GriffinWelcomePage
 from ..services.toast_service import ToastService
 
@@ -75,7 +77,7 @@ class GriffinWindow(Adw.ApplicationWindow):
     def on_file_selected(self, dialog, result):
         try:
             file = dialog.open_finish(result)
-            print("Selected:", file.get_path())
+            load_data(file.get_path())
         except GLib.Error:
             print("File selection cancelled")
 
