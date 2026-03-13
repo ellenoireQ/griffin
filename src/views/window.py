@@ -72,6 +72,17 @@ class GriffinWindow(Adw.ApplicationWindow):
 
     def on_open_file(self, action, param):
         dialog = Gtk.FileDialog()
+
+        # csv filter
+        csv_filter = Gtk.FileFilter()
+        csv_filter.set_name("CSV files")
+        csv_filter.add_pattern("*.csv")
+
+        # list store for filter
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(csv_filter)
+
+        dialog.set_filters(filters)
         dialog.open(self, None, self.on_file_selected)
 
     def on_file_selected(self, dialog, result):
