@@ -21,11 +21,13 @@
 # SOFTWARE.
 #
 # SPDX-License-Identifier: MIT
+import pandas as pd
 
 
 # Load data from source
 def load_data(source: str):
-    with open(source, "r") as f:
-        content = f.read()
-        print(content)
-        # ...
+    data = pd.read_csv(
+        source,
+    )
+
+    print(data.head())
