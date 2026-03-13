@@ -4,17 +4,25 @@ gnome = import('gnome')
 
 blueprint_compiler = find_program('blueprint-compiler')
 
-blueprints = custom_target('blueprints',
+blueprints = custom_target(
+  'blueprints',
   input: files(
-    'ui/window.blp',
     'ui/shortcuts-dialog.blp',
     'ui/welcome.blp',
+    'ui/window.blp',
   ),
   output: '.',
-  command: [blueprint_compiler, 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@/ui', '@INPUT@'],
+  command: [
+    blueprint_compiler,
+    'batch-compile',
+    '@OUTPUT@',
+    '@CURRENT_SOURCE_DIR@/ui',
+    '@INPUT@',
+  ],
 )
 
-gnome.compile_resources('griffin',
+gnome.compile_resources(
+  'griffin',
   'griffin.gresource.xml',
   gresource_bundle: true,
   install: true,
@@ -36,7 +44,7 @@ configure_file(
   configuration: conf,
   install: true,
   install_dir: get_option('bindir'),
-  install_mode: 'rwxr-xr-x'
+  install_mode: 'rwxr-xr-x',
 )
 
 griffin_sources = [
@@ -54,7 +62,12 @@ griffin_services = [
   'services/__init__.py',
   'services/toast_service.py',
 ]
+griffin_backend = [
+  'backend/__init__.py',
+  'backend/load_data.py',
+]
 
 install_data(griffin_sources, install_dir: moduledir)
 install_data(griffin_views, install_dir: moduledir / 'views')
 install_data(griffin_services, install_dir: moduledir / 'services')
+install_data(griffin_backend, install_dir: moduledir / 'backend')
