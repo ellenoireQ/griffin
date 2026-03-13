@@ -22,7 +22,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from gi.repository import Adw, Gio, Gtk  # type: ignore
+from gi.repository import Adw, Gio, GLib, Gtk  # type: ignore
 from .welcome import GriffinWelcomePage
 from ..services.toast_service import ToastService
 
@@ -69,7 +69,15 @@ class GriffinWindow(Adw.ApplicationWindow):
         print("New file")
 
     def on_open_file(self, action, param):
-        print("Open file")
+        dialog = Gtk.FileDialog()
+        dialog.open(self, None, self.on_file_selected)
+
+    def on_file_selected(self, dialog, result):
+        try:
+            file = dialog.open_finish(result)
+            print("Selected:", file.get_path())
+        except GLib.Error:
+            print("File selection cancelled")
 
     def on_save_file(self, action, param):
         print("Save file")
