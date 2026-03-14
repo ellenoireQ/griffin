@@ -52,10 +52,6 @@ template $GriffinWindow: Adw.ApplicationWindow {
           sensitive: false;
         }
 
-        Separator {
-          orientation: vertical;
-        }
-
         Button {
           icon-name: "x-office-spreadsheet-symbolic";
           tooltip-text: _("Analytics");
@@ -73,6 +69,31 @@ template $GriffinWindow: Adw.ApplicationWindow {
           tooltip-text: _("Train Model");
           action-name: "win.show-train";
         }
+
+        Separator {
+          orientation: vertical;
+        }
+
+        Button _search_some {
+          icon-name: "system-search-symbolic";
+          tooltip-text: _("Search");
+          action-name: "win.toggle-search";
+          sensitive: false;
+        }
+
+        Button _view_some {
+          icon-name: "view-app-grid-symbolic";
+          tooltip-text: _("Expand Data");
+          action-name: "win.toggle-expand-data";
+          sensitive: false;
+        }
+
+        SearchEntry search_entry {
+          placeholder-text: _("Search data...");
+          hexpand: true;
+          visible: false;
+          sensitive: false;
+        }
       }
 
       Separator {
@@ -89,7 +110,7 @@ template $GriffinWindow: Adw.ApplicationWindow {
           width-request: 180;
         }
 
-        Separator {
+        Separator sidebar_separator {
           orientation: vertical;
         }
 

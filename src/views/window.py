@@ -55,6 +55,11 @@ class GriffinWindow(Adw.ApplicationWindow):
     stack3 = Gtk.Template.Child()
     stack = Gtk.Template.Child()
     save_as_button = Gtk.Template.Child()
+    search_entry = Gtk.Template.Child()
+    sidebar = Gtk.Template.Child()
+    sidebar_separator = Gtk.Template.Child()
+    _search_some = Gtk.Template.Child()
+    _view_some = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -62,6 +67,13 @@ class GriffinWindow(Adw.ApplicationWindow):
         ToastService.get_default().set_overlay(self.toast_overlay)
 
         self.filepaths = ""
+        self.current_df = None
+        self.current_filename = ""
+        self.total_rows = 0
+        self.row_limit = None
+        self._row_limit_dialog = None
+        self._row_limit_spin = None
+
         # Register window actions for toolbar buttons
         self._create_action("open-file", self.on_open_file)
         self._create_action("to-excel", self.save_to_excel)
@@ -70,6 +82,11 @@ class GriffinWindow(Adw.ApplicationWindow):
         self._create_action("show-analytics", self.show_analytics_page)
         self._create_action("show-plot", self.show_plot_page)
         self._create_action("show-train", self.show_train_page)
+        self._create_action("toggle-search", self.toggle_search)
+        self._create_action("toggle-expand-data", self.toggle_expand_data)
+
+        self.search_entry.connect("search-changed", self.on_search_changed)
+        self._set_data_actions_enabled(False)
 
         # Show welcome page on first run
         settings = Gio.Settings.new("org.griffin.app")
@@ -107,18 +124,14 @@ class GriffinWindow(Adw.ApplicationWindow):
             file = dialog.open_finish(result)
             filepath = file.get_path()
             self.filepaths = filepath
-            df = load_data(filepath)
-            self._build_table(df)
-
-            filename = os.path.basename(filepath)
-            row_count, col_count = df.shape
-            self.status_label.set_text(
-                f"{filename}  —  {row_count} rows × {col_count} columns"
-            )
-            ToastService.get_default().show(f"Loaded {filename}")
-            self.save_as_button.set_sensitive(True)
+            self.current_filename = os.path.basename(filepath)
+            self._load_current_file()
+            ToastService.get_default().show(f"Loaded {self.current_filename}")
         except GLib.Error:
             print("File selection cancelled")
+        except Exception as err:
+            self._reset_loaded_data()
+            ToastService.get_default().show(f"Failed to load CSV: {err}")
 
     def _build_table(self, df):
         """Build a Gtk.ColumnView from a pandas DataFrame and display it."""
@@ -156,6 +169,121 @@ class GriffinWindow(Adw.ApplicationWindow):
             column_view.append_column(column)
 
         self.data_scroll.set_child(column_view)
+
+    def _filter_dataframe(self, query):
+        if self.current_df is None:
+            return None
+
+        text = query.strip()
+        if not text:
+            return self.current_df
+
+        lowered = text.casefold()
+        mask = self.current_df.astype(str).apply(
+            lambda column: column.str.casefold().str.contains(lowered, na=False)
+        )
+        return self.current_df[mask.any(axis=1)]
+
+    def _update_status_label(self, visible_rows=None):
+        if self.current_df is None:
+            self.status_label.set_text("No data loaded. Open a CSV file to get started.")
+            return
+
+        loaded_rows, col_count = self.current_df.shape
+        total_rows = self.total_rows or loaded_rows
+
+        if self.row_limit is None and (visible_rows is None or visible_rows == loaded_rows):
+            self.status_label.set_text(
+                f"{self.current_filename}  —  {total_rows} rows × {col_count} columns"
+            )
+            return
+
+        if visible_rows is None:
+            visible_rows = loaded_rows
+
+        self.status_label.set_text(
+            f"{self.current_filename}  —  showing {visible_rows} of {total_rows} rows × {col_count} columns"
+        )
+
+    def _set_data_actions_enabled(self, enabled):
+        self.save_as_button.set_sensitive(enabled)
+        self._search_some.set_sensitive(enabled)
+        self._view_some.set_sensitive(enabled)
+        self.search_entry.set_sensitive(enabled)
+
+        if not enabled:
+            self.search_entry.set_text("")
+            self.search_entry.set_visible(False)
+
+    def _reset_loaded_data(self):
+        self.filepaths = ""
+        self.current_df = None
+        self.current_filename = ""
+        self.total_rows = 0
+        self.row_limit = None
+        self.data_scroll.set_child(None)
+        self._set_data_actions_enabled(False)
+        self._update_status_label()
+
+    def _load_current_file(self):
+        if not self.filepaths:
+            return
+
+        df = load_data(self.filepaths, self.row_limit)
+        self.current_df = df
+        self.total_rows = self._count_total_rows(self.filepaths)
+        self.search_entry.set_text("")
+        self._build_table(df)
+        self._update_status_label(df.shape[0])
+        self.save_as_button.set_sensitive(True)
+        self._set_data_actions_enabled(True)
+
+    def _count_total_rows(self, filepath):
+        with open(filepath, "r", encoding="utf-8", errors="ignore") as csv_file:
+            line_count = sum(1 for _ in csv_file)
+        return max(0, line_count - 1)
+
+    def _create_row_limit_dialog(self):
+        dialog = Gtk.Dialog(title="Expand Data", transient_for=self, modal=True)
+        dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
+        dialog.add_button("Apply", Gtk.ResponseType.OK)
+        dialog.set_default_response(Gtk.ResponseType.OK)
+
+        content = dialog.get_content_area()
+        content.set_spacing(12)
+        content.set_margin_top(12)
+        content.set_margin_bottom(12)
+        content.set_margin_start(12)
+        content.set_margin_end(12)
+
+        label = Gtk.Label(
+            label="Set the maximum number of rows to load from the CSV file:",
+            xalign=0,
+        )
+        spin = Gtk.SpinButton.new_with_range(1, 1000000, 1)
+        spin.set_hexpand(True)
+        spin.set_value(float(self.row_limit or max(1, min(self.total_rows, 100))))
+
+        content.append(label)
+        content.append(spin)
+
+        dialog.connect("response", self._on_row_limit_dialog_response)
+        self._row_limit_dialog = dialog
+        self._row_limit_spin = spin
+
+    def _on_row_limit_dialog_response(self, dialog, response_id):
+        if response_id == Gtk.ResponseType.OK and self.filepaths:
+            new_limit = int(self._row_limit_spin.get_value())
+            self.row_limit = new_limit
+            try:
+                self._load_current_file()
+                ToastService.get_default().show(
+                    f"Loaded {min(self.total_rows, new_limit)} rows from {self.current_filename}"
+                )
+            except Exception as err:
+                ToastService.get_default().show(f"Failed to reload CSV: {err}")
+
+        dialog.hide()
 
     def _on_factory_setup(self, factory, list_item):
         label = Gtk.Label(xalign=0)
@@ -233,6 +361,43 @@ class GriffinWindow(Adw.ApplicationWindow):
 
     def on_import_file(self, action, param):
         print("Import file")
+
+    def toggle_search(self, action, param):
+        if self.current_df is None:
+            return
+
+        is_visible = self.search_entry.get_visible()
+        self.search_entry.set_visible(not is_visible)
+        self.stack.set_visible_child_name("analytics")
+
+        if is_visible:
+            self.search_entry.set_text("")
+            self._build_table(self.current_df)
+            self._update_status_label()
+            return
+
+        self.search_entry.grab_focus()
+
+    def on_search_changed(self, entry):
+        filtered_df = self._filter_dataframe(entry.get_text())
+        if filtered_df is None:
+            return
+
+        self.stack.set_visible_child_name("analytics")
+        self._build_table(filtered_df)
+        self._update_status_label(filtered_df.shape[0])
+
+    def toggle_expand_data(self, action, param):
+        if self.current_df is None:
+            return
+
+        self.stack.set_visible_child_name("analytics")
+        if self._row_limit_dialog is None:
+            self._create_row_limit_dialog()
+
+        self._row_limit_spin.set_range(1, max(1, self.total_rows or 1))
+        self._row_limit_spin.set_value(float(self.row_limit or max(1, min(self.total_rows, 100))))
+        self._row_limit_dialog.present()
 
     def show_analytics_page(self, action, param):
         self.stack.set_visible_child_name("analytics")

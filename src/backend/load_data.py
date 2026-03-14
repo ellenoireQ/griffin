@@ -25,9 +25,11 @@ import pandas as pd
 
 
 # Load data from source
-def load_data(source: str):
-    data = pd.read_csv(
-        source,
-    )
+def load_data(source: str, max_rows: int | None = None):
+    read_options = {}
+    if max_rows is not None:
+        read_options["nrows"] = max_rows
+
+    data = pd.read_csv(source, **read_options)
 
     return data
