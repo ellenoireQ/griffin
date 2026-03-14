@@ -53,6 +53,7 @@ class GriffinWindow(Adw.ApplicationWindow):
     stack1 = Gtk.Template.Child()
     stack2 = Gtk.Template.Child()
     stack3 = Gtk.Template.Child()
+    stack = Gtk.Template.Child()
     save_as_button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
@@ -66,6 +67,9 @@ class GriffinWindow(Adw.ApplicationWindow):
         self._create_action("to-excel", self.save_to_excel)
         self._create_action("to-json", self.save_to_json)
         self._create_action("import-file", self.on_import_file)
+        self._create_action("show-analytics", self.show_analytics_page)
+        self._create_action("show-plot", self.show_plot_page)
+        self._create_action("show-train", self.show_train_page)
 
         # Show welcome page on first run
         settings = Gio.Settings.new("org.griffin.app")
@@ -229,3 +233,12 @@ class GriffinWindow(Adw.ApplicationWindow):
 
     def on_import_file(self, action, param):
         print("Import file")
+
+    def show_analytics_page(self, action, param):
+        self.stack.set_visible_child_name("analytics")
+
+    def show_plot_page(self, action, param):
+        self.stack.set_visible_child_name("plot")
+
+    def show_train_page(self, action, param):
+        self.stack.set_visible_child_name("train")

@@ -51,6 +51,28 @@ template $GriffinWindow: Adw.ApplicationWindow {
           menu-model: save_menu;
           sensitive: false;
         }
+
+        Separator {
+          orientation: vertical;
+        }
+
+        Button {
+          icon-name: "x-office-spreadsheet-symbolic";
+          tooltip-text: _("Analytics");
+          action-name: "win.show-analytics";
+        }
+
+        Button {
+          icon-name: "x-office-presentation-symbolic";
+          tooltip-text: _("Plot");
+          action-name: "win.show-plot";
+        }
+
+        Button {
+          icon-name: "preferences-desktop-display-symbolic";
+          tooltip-text: _("Train Model");
+          action-name: "win.show-train";
+        }
       }
 
       Separator {
@@ -131,7 +153,7 @@ template $GriffinWindow: Adw.ApplicationWindow {
 
           Gtk.StackPage {
             name: "train";
-            title: _("Train");
+            title: _("Train Model");
             icon-name: "help-about-symbolic";
 
             child: Box stack3 {
