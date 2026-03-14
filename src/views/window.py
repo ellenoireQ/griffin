@@ -53,6 +53,7 @@ class GriffinWindow(Adw.ApplicationWindow):
     stack1 = Gtk.Template.Child()
     stack2 = Gtk.Template.Child()
     stack3 = Gtk.Template.Child()
+    save_as_button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -111,6 +112,7 @@ class GriffinWindow(Adw.ApplicationWindow):
                 f"{filename}  —  {row_count} rows × {col_count} columns"
             )
             ToastService.get_default().show(f"Loaded {filename}")
+            self.save_as_button.set_sensitive(True)
         except GLib.Error:
             print("File selection cancelled")
 
