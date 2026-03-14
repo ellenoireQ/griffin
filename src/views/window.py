@@ -60,7 +60,6 @@ class GriffinWindow(Adw.ApplicationWindow):
         ToastService.get_default().set_overlay(self.toast_overlay)
 
         # Register window actions for toolbar buttons
-        self._create_action("new-file", self.on_new_file)
         self._create_action("open-file", self.on_open_file)
         self._create_action("save-file", self.on_save_file)
         self._create_action("import-file", self.on_import_file)
@@ -80,9 +79,6 @@ class GriffinWindow(Adw.ApplicationWindow):
         action = Gio.SimpleAction.new(name, None)
         action.connect("activate", callback)
         self.add_action(action)
-
-    def on_new_file(self, action, param):
-        print("New file")
 
     def on_open_file(self, action, param):
         dialog = Gtk.FileDialog()

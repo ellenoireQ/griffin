@@ -38,22 +38,17 @@ template $GriffinWindow: Adw.ApplicationWindow {
           "toolbar",
         ]
 
-        Button new_button {
-          icon-name: "document-new-symbolic";
-          tooltip-text: _("New");
-          action-name: "win.new-file";
-        }
-
         Button open_button {
           icon-name: "document-open-symbolic";
           tooltip-text: _("Open");
           action-name: "win.open-file";
         }
 
-        Button save_button {
+        MenuButton {
+          primary: true;
           icon-name: "document-save-symbolic";
-          tooltip-text: _("Save");
-          action-name: "win.save-file";
+          tooltip-text: _("Save As");
+          menu-model: save_menu;
         }
       }
 
@@ -183,6 +178,20 @@ menu hack_menu {
     item {
       label: _("Enable first-run");
       action: "app.firstRun";
+    }
+  }
+}
+
+menu save_menu {
+  section {
+    item {
+      label: _("Excel");
+      action: "win.save-file";
+    }
+
+    item {
+      label: _("JSON");
+      action: "win.save-file";
     }
   }
 }
