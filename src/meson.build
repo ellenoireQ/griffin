@@ -65,6 +65,7 @@ griffin_services = [
 griffin_backend = [
   'backend/__init__.py',
   'backend/load_data.py',
+  'backend/save_to.py',
 ]
 
 install_data(griffin_sources, install_dir: moduledir)

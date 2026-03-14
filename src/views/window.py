@@ -23,9 +23,9 @@
 # SPDX-License-Identifier: MIT
 
 import os
-from gi.repository import Adw, Gio, GLib, GObject, Gtk  # type: ignore
+from gi.repository import Adw, Gio, GLib, GObject, Gtk
 
-from ..backend import load_data
+from ..backend import load_data, Save_As
 from .welcome import GriffinWelcomePage
 from ..services.toast_service import ToastService
 
@@ -59,9 +59,11 @@ class GriffinWindow(Adw.ApplicationWindow):
 
         ToastService.get_default().set_overlay(self.toast_overlay)
 
+        self.filepaths = ""
         # Register window actions for toolbar buttons
         self._create_action("open-file", self.on_open_file)
-        self._create_action("save-file", self.on_save_file)
+        self._create_action("to-excel", self.save_to_excel)
+        self._create_action("to-json", self.save_to_json)
         self._create_action("import-file", self.on_import_file)
 
         # Show welcome page on first run
@@ -99,6 +101,7 @@ class GriffinWindow(Adw.ApplicationWindow):
         try:
             file = dialog.open_finish(result)
             filepath = file.get_path()
+            self.filepaths = filepath
             df = load_data(filepath)
             self._build_table(df)
 
@@ -162,8 +165,65 @@ class GriffinWindow(Adw.ApplicationWindow):
         data_row = list_item.get_item()
         label.set_text(data_row.get_value(col_index))
 
-    def on_save_file(self, action, param):
-        print("Save file")
+    def save_to_excel(self, action, param):
+        if not self.filepaths:
+            ToastService.get_default().show("No file loaded to save.")
+            return
+
+        dialog = Gtk.FileDialog()
+        dialog.set_initial_name("data.xlsx")
+
+        xlsx_filter = Gtk.FileFilter()
+        xlsx_filter.set_name("Excel files (*.xlsx)")
+        xlsx_filter.add_pattern("*.xlsx")
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(xlsx_filter)
+        dialog.set_filters(filters)
+        dialog.set_default_filter(xlsx_filter)
+
+        dialog.save(self, None, self._on_save_excel_finish)
+
+    def _on_save_excel_finish(self, dialog, result):
+        try:
+            file = dialog.save_finish(result)
+            dest_path = file.get_path()
+            if not dest_path.endswith(".xlsx"):
+                dest_path += ".xlsx"
+            sv = Save_As()
+            sv.to_excel(self.filepaths, dest_path)
+            ToastService.get_default().show(f"Saved as {os.path.basename(dest_path)}")
+        except GLib.Error:
+            print("Save (Excel) cancelled")
+
+    def save_to_json(self, action, param):
+        if not self.filepaths:
+            ToastService.get_default().show("No file loaded to save.")
+            return
+
+        dialog = Gtk.FileDialog()
+        dialog.set_initial_name("data.json")
+
+        json_filter = Gtk.FileFilter()
+        json_filter.set_name("JSON files (*.json)")
+        json_filter.add_pattern("*.json")
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(json_filter)
+        dialog.set_filters(filters)
+        dialog.set_default_filter(json_filter)
+
+        dialog.save(self, None, self._on_save_json_finish)
+
+    def _on_save_json_finish(self, dialog, result):
+        try:
+            file = dialog.save_finish(result)
+            dest_path = file.get_path()
+            if not dest_path.endswith(".json"):
+                dest_path += ".json"
+            sv = Save_As()
+            sv.to_json(self.filepaths, dest_path)
+            ToastService.get_default().show(f"Saved as {os.path.basename(dest_path)}")
+        except GLib.Error:
+            print("Save (JSON) cancelled")
 
     def on_import_file(self, action, param):
         print("Import file")
