@@ -88,26 +88,26 @@ template $GriffinWindow: Adw.ApplicationWindow {
             child: Box stack1 {
               orientation: vertical;
               vexpand: true;
-              valign: center;
-              halign: center;
-              spacing: 12;
+              spacing: 0;
 
-              Label label1 {
-                label: _("Hello, World!");
+              Label status_label {
+                label: _("No data loaded. Open a CSV file to get started.");
+                margin-top: 12;
+                margin-bottom: 6;
+                margin-start: 12;
+                margin-end: 12;
+                halign: start;
 
                 styles [
-                  "title-1",
+                  "dim-label",
                 ]
               }
 
-              Box butt_box {
-                halign: center;
-
-                Button button {
-                  label: _("_Ok");
-                  use-underline: true;
-                  clicked => $ok_button_clicked();
-                }
+              ScrolledWindow data_scroll {
+                vexpand: true;
+                hexpand: true;
+                hscrollbar-policy: automatic;
+                vscrollbar-policy: automatic;
               }
             };
           }

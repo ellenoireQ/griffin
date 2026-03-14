@@ -30,4 +30,4 @@ def load_data(source: str):
         source,
     )
 
-    print(data.head())
+    return data

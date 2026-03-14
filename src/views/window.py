@@ -22,20 +22,34 @@
 #
 # SPDX-License-Identifier: MIT
 
-from gi.repository import Adw, Gio, GLib, Gtk  # type: ignore
+import os
+from gi.repository import Adw, Gio, GLib, GObject, Gtk  # type: ignore
 
 from ..backend import load_data
 from .welcome import GriffinWelcomePage
 from ..services.toast_service import ToastService
 
 
+class DataRow(GObject.Object):
+    """A GObject wrapper for a single row of data from a DataFrame."""
+
+    def __init__(self, values: list[str]):
+        super().__init__()
+        self._values = values
+
+    def get_value(self, col_index: int) -> str:
+        if 0 <= col_index < len(self._values):
+            return self._values[col_index]
+        return ""
+
+
 @Gtk.Template(resource_path="/org/griffin/app/window.ui")
 class GriffinWindow(Adw.ApplicationWindow):
     __gtype_name__ = "GriffinWindow"
 
-    label1 = Gtk.Template.Child()
-    button = Gtk.Template.Child()
+    status_label = Gtk.Template.Child()
     toast_overlay = Gtk.Template.Child()
+    data_scroll = Gtk.Template.Child()
     stack1 = Gtk.Template.Child()
     stack2 = Gtk.Template.Child()
     stack3 = Gtk.Template.Child()
@@ -88,16 +102,72 @@ class GriffinWindow(Adw.ApplicationWindow):
     def on_file_selected(self, dialog, result):
         try:
             file = dialog.open_finish(result)
-            load_data(file.get_path())
+            filepath = file.get_path()
+            df = load_data(filepath)
+            self._build_table(df)
+
+            filename = os.path.basename(filepath)
+            row_count, col_count = df.shape
+            self.status_label.set_text(
+                f"{filename}  —  {row_count} rows × {col_count} columns"
+            )
+            ToastService.get_default().show(f"Loaded {filename}")
         except GLib.Error:
             print("File selection cancelled")
+
+    def _build_table(self, df):
+        """Build a Gtk.ColumnView from a pandas DataFrame and display it."""
+        # Remove previous table if any
+        existing = self.data_scroll.get_child()
+        if existing:
+            self.data_scroll.set_child(None)
+
+        columns = list(df.columns)
+
+        # Create list store and populate with DataRow objects
+        store = Gio.ListStore.new(DataRow)
+        for _, row in df.iterrows():
+            values = [str(v) for v in row.values]
+            store.append(DataRow(values))
+
+        # Create selection model
+        selection = Gtk.SingleSelection(model=store)
+
+        # Create ColumnView
+        column_view = Gtk.ColumnView(model=selection)
+        column_view.set_show_row_separators(True)
+        column_view.set_show_column_separators(True)
+        column_view.add_css_class("data-table")
+
+        # Add a column for each DataFrame column
+        for col_index, col_name in enumerate(columns):
+            factory = Gtk.SignalListItemFactory()
+            factory.connect("setup", self._on_factory_setup)
+            factory.connect("bind", self._on_factory_bind, col_index)
+
+            column = Gtk.ColumnViewColumn(title=col_name, factory=factory)
+            column.set_resizable(True)
+            column.set_expand(True)
+            column_view.append_column(column)
+
+        self.data_scroll.set_child(column_view)
+
+    def _on_factory_setup(self, factory, list_item):
+        label = Gtk.Label(xalign=0)
+        label.set_margin_start(6)
+        label.set_margin_end(6)
+        label.set_margin_top(4)
+        label.set_margin_bottom(4)
+        label.set_ellipsize(3)
+        list_item.set_child(label)
+
+    def _on_factory_bind(self, factory, list_item, col_index):
+        label = list_item.get_child()
+        data_row = list_item.get_item()
+        label.set_text(data_row.get_value(col_index))
 
     def on_save_file(self, action, param):
         print("Save file")
 
     def on_import_file(self, action, param):
         print("Import file")
-
-    @Gtk.Template.Callback()
-    def ok_button_clicked(self, button):
-        ToastService.get_default().show("Ok button clicked!")
