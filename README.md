@@ -1,3 +1,3 @@
 # griffin
 
-A description of this project.
+Exploring data without writing code
