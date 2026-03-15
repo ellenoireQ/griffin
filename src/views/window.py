@@ -59,6 +59,7 @@ class GriffinWindow(Adw.ApplicationWindow):
     sidebar = Gtk.Template.Child()
     sidebar_separator = Gtk.Template.Child()
     _search_some = Gtk.Template.Child()
+    _set_range = Gtk.Template.Child()
     _view_some = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
@@ -71,8 +72,13 @@ class GriffinWindow(Adw.ApplicationWindow):
         self.current_filename = ""
         self.total_rows = 0
         self.row_limit = None
+        self.train_start_range = ""
+        self.train_end_range = ""
         self._row_limit_dialog = None
         self._row_limit_spin = None
+        self._set_range_dialog = None
+        self._set_range_start_entry = None
+        self._set_range_end_entry = None
 
         # Register window actions for toolbar buttons
         self._create_action("open-file", self.on_open_file)
@@ -83,10 +89,13 @@ class GriffinWindow(Adw.ApplicationWindow):
         self._create_action("show-plot", self.show_plot_page)
         self._create_action("show-train", self.show_train_page)
         self._create_action("toggle-search", self.toggle_search)
+        self._create_action("toggle-set-range", self.toggle_set_range)
         self._create_action("toggle-expand-data", self.toggle_expand_data)
 
         self.search_entry.connect("search-changed", self.on_search_changed)
+        self.stack.connect("notify::visible-child-name", self._on_stack_page_changed)
         self._set_data_actions_enabled(False)
+        self._update_page_toolbar_state(self.stack.get_visible_child_name() or "analytics")
 
         # Show welcome page on first run
         settings = Gio.Settings.new("org.griffin.app")
@@ -215,6 +224,17 @@ class GriffinWindow(Adw.ApplicationWindow):
             self.search_entry.set_text("")
             self.search_entry.set_visible(False)
 
+    def _update_page_toolbar_state(self, page_name):
+        is_train_page = page_name == "train"
+
+        self._set_range.set_sensitive(is_train_page)
+
+        if page_name != "analytics":
+            self.search_entry.set_visible(False)
+
+    def _on_stack_page_changed(self, stack, _param_spec):
+        self._update_page_toolbar_state(stack.get_visible_child_name() or "analytics")
+
     def _reset_loaded_data(self):
         self.filepaths = ""
         self.current_df = None
@@ -271,6 +291,49 @@ class GriffinWindow(Adw.ApplicationWindow):
         self._row_limit_dialog = dialog
         self._row_limit_spin = spin
 
+    def _create_set_range_dialog(self):
+        dialog = Gtk.Dialog(title="Set Range", transient_for=self, modal=True)
+        dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
+        dialog.add_button("Apply", Gtk.ResponseType.OK)
+        dialog.set_default_response(Gtk.ResponseType.OK)
+
+        content = dialog.get_content_area()
+        content.set_spacing(12)
+        content.set_margin_top(12)
+        content.set_margin_bottom(12)
+        content.set_margin_start(12)
+        content.set_margin_end(12)
+
+        label = Gtk.Label(
+            label="Set the start and end range for training:",
+            xalign=0,
+        )
+        start_entry = Gtk.Entry()
+        start_entry.set_placeholder_text("Start range")
+        start_entry.set_hexpand(True)
+        start_entry.set_input_purpose(Gtk.InputPurpose.DIGITS)
+        start_entry.set_activates_default(False)
+
+        end_entry = Gtk.Entry()
+        end_entry.set_placeholder_text("End range")
+        end_entry.set_hexpand(True)
+        end_entry.set_input_purpose(Gtk.InputPurpose.DIGITS)
+        end_entry.set_activates_default(False)
+
+        content.append(label)
+        content.append(start_entry)
+        content.append(end_entry)
+
+        dialog.connect("response", self._on_set_range_dialog_response)
+        self._set_range_dialog = dialog
+        self._set_range_start_entry = start_entry
+        self._set_range_end_entry = end_entry
+
+    def _focus_set_range_start_entry(self):
+        if self._set_range_start_entry is not None:
+            self._set_range_start_entry.grab_focus()
+        return False
+
     def _on_row_limit_dialog_response(self, dialog, response_id):
         if response_id == Gtk.ResponseType.OK and self.filepaths:
             new_limit = int(self._row_limit_spin.get_value())
@@ -282,6 +345,18 @@ class GriffinWindow(Adw.ApplicationWindow):
                 )
             except Exception as err:
                 ToastService.get_default().show(f"Failed to reload CSV: {err}")
+
+        dialog.hide()
+
+    def _on_set_range_dialog_response(self, dialog, response_id):
+        if response_id == Gtk.ResponseType.OK:
+            self.train_start_range = self._set_range_start_entry.get_text().strip()
+            self.train_end_range = self._set_range_end_entry.get_text().strip()
+
+            if self.train_start_range or self.train_end_range:
+                ToastService.get_default().show(
+                    f"Range set: {self.train_start_range or '-'} → {self.train_end_range or '-'}"
+                )
 
         dialog.hide()
 
@@ -378,6 +453,19 @@ class GriffinWindow(Adw.ApplicationWindow):
 
         self.search_entry.grab_focus()
 
+    def toggle_set_range(self, action, param):
+        if self.stack.get_visible_child_name() != "train":
+            return
+
+        if self._set_range_dialog is None:
+            self._create_set_range_dialog()
+
+        self._set_range_start_entry.set_text(self.train_start_range)
+        self._set_range_end_entry.set_text(self.train_end_range)
+        self._set_range_dialog.present()
+
+        GLib.idle_add(self._focus_set_range_start_entry)
+
     def on_search_changed(self, entry):
         filtered_df = self._filter_dataframe(entry.get_text())
         if filtered_df is None:
@@ -401,9 +489,12 @@ class GriffinWindow(Adw.ApplicationWindow):
 
     def show_analytics_page(self, action, param):
         self.stack.set_visible_child_name("analytics")
+        self._update_page_toolbar_state("analytics")
 
     def show_plot_page(self, action, param):
         self.stack.set_visible_child_name("plot")
+        self._update_page_toolbar_state("plot")
 
     def show_train_page(self, action, param):
         self.stack.set_visible_child_name("train")
+        self._update_page_toolbar_state("train")

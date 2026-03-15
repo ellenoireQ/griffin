@@ -87,6 +87,13 @@ template $GriffinWindow: Adw.ApplicationWindow {
           action-name: "win.toggle-expand-data";
           sensitive: false;
         }
+        
+        Button _set_range {
+          icon-name: "find-location-symbolic";
+          tooltip-text: _("Set Range");
+          action-name: "win.toggle-set-range";
+          sensitive: false;
+        }
 
         SearchEntry search_entry {
           placeholder-text: _("Search data...");
@@ -190,27 +197,6 @@ template $GriffinWindow: Adw.ApplicationWindow {
               margin-end: 16;
 
               Box {
-                spacing: 12;
-                homogeneous: true;
-                vexpand: true;
-
-                Box {
-                  orientation: vertical;
-                  hexpand: true;
-                  vexpand: true;
-
-                  Label {
-                    label: _("Set range");
-                    halign: start;
-                    margin-top: 12;
-                    margin-start: 12;
-                  }
-
-                  styles [
-                    "card",
-                  ]
-                }
-
                 Box {
                   orientation: vertical;
                   hexpand: true;
